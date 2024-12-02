@@ -33,47 +33,17 @@ pub fn parse(input: String) -> InputType {
 
 pub fn part1(input: InputType) -> String {
   let InputType(list) = input
-  list.count(list, fn(line) {
-    list.window_by_2(line)
-    |> list.all(fn(tuple) {
-      let diff = int.absolute_value(pair.first(tuple) - pair.second(tuple))
-      diff < 4 && diff > 0
-    })
-    && {
-      case
-        list.window_by_2(line)
-        |> list.fold(Unknown, fn(dir, tuple) {
-          let diff = pair.first(tuple) - pair.second(tuple)
-          case dir {
-            Unknown ->
-              case diff > 0 {
-                True -> Down
-                False -> Up
-              }
-            Failed -> Failed
-            Up ->
-              case diff > 0 {
-                True -> Failed
-                False -> Up
-              }
-            Down ->
-              case diff < 0 {
-                True -> Failed
-                False -> Down
-              }
-          }
-        })
-      {
-        Failed -> False
-        _ -> True
-      }
-    }
-  })
+  list.count(list, is_line_valid)
   |> int.to_string
 }
 
-pub fn part2(_input: InputType) -> String {
-  "todo"
+pub fn part2(input: InputType) -> String {
+  let InputType(list) = input
+  list.count(list, fn(line) {
+    [line, ..list.combinations(line, list.length(line) - 1)]
+    |> list.any(is_line_valid)
+  })
+  |> int.to_string
 }
 
 pub fn main() {
@@ -82,4 +52,41 @@ pub fn main() {
   io.println(part1(input))
   io.println("Day " <> day_num <> " part 2:")
   io.println(part2(input))
+}
+
+fn is_line_valid(line: List(Int)) -> Bool {
+  list.window_by_2(line)
+  |> list.all(fn(tuple) {
+    let diff = int.absolute_value(pair.first(tuple) - pair.second(tuple))
+    diff < 4 && diff > 0
+  })
+  && {
+    case
+      list.window_by_2(line)
+      |> list.fold(Unknown, fn(dir, tuple) {
+        let diff = pair.first(tuple) - pair.second(tuple)
+        case dir {
+          Unknown ->
+            case diff > 0 {
+              True -> Down
+              False -> Up
+            }
+          Failed -> Failed
+          Up ->
+            case diff > 0 {
+              True -> Failed
+              False -> Up
+            }
+          Down ->
+            case diff < 0 {
+              True -> Failed
+              False -> Down
+            }
+        }
+      })
+    {
+      Failed -> False
+      _ -> True
+    }
+  }
 }
