@@ -8,22 +8,21 @@ import gleam/string
 
 const day_num = "01"
 
-pub type InputType {
-  InputType(#(List(String), List(String)))
-}
+pub type LocationIds =
+  #(List(String), List(String))
 
-pub fn parse(input: String) -> InputType {
+pub fn parse(input: String) -> LocationIds {
   input
   |> string.split("\n")
-  |> list.fold(InputType(#([], [])), fn(list, line) {
+  |> list.fold(#([], []), fn(list, line) {
     let assert [first, second] = line |> string.split("   ")
-    let InputType(#(left, right)) = list
-    InputType(#([first, ..left], [second, ..right]))
+    let #(left, right) = list
+    #([first, ..left], [second, ..right])
   })
 }
 
-pub fn part1(input: InputType) -> String {
-  let InputType(#(left, right)) = input
+pub fn part1(input: LocationIds) -> String {
+  let #(left, right) = input
   let left =
     list.map(left, int.parse)
     |> result.values()
@@ -41,8 +40,8 @@ pub fn part1(input: InputType) -> String {
   |> int.to_string
 }
 
-pub fn part2(input: InputType) -> String {
-  let InputType(#(left, right)) = input
+pub fn part2(input: LocationIds) -> String {
+  let #(left, right) = input
   let left =
     list.map(left, int.parse)
     |> result.values()
