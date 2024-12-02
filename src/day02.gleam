@@ -8,38 +8,26 @@ import gleam/string
 
 const day_num = "02"
 
-pub type InputType {
-  InputType(List(List(Int)))
+pub type ReportList =
+  List(List(Int))
+
+pub fn parse(input: String) -> ReportList {
+  input
+  |> string.split("\n")
+  |> list.map(fn(s) {
+    string.split(s, " ")
+    |> list.map(fn(n) { int.parse(n) })
+    |> result.values()
+  })
 }
 
-type Dir {
-  Up
-  Down
-  Unknown
-  Failed
-}
-
-pub fn parse(input: String) -> InputType {
-  InputType(
-    input
-    |> string.split("\n")
-    |> list.map(fn(s) {
-      string.split(s, " ")
-      |> list.map(fn(n) { int.parse(n) })
-      |> result.values()
-    }),
-  )
-}
-
-pub fn part1(input: InputType) -> String {
-  let InputType(list) = input
-  list.count(list, is_line_valid)
+pub fn part1(input: ReportList) -> String {
+  list.count(input, is_line_valid)
   |> int.to_string
 }
 
-pub fn part2(input: InputType) -> String {
-  let InputType(list) = input
-  list.count(list, fn(line) {
+pub fn part2(input: ReportList) -> String {
+  list.count(input, fn(line) {
     [line, ..list.combinations(line, list.length(line) - 1)]
     |> list.any(is_line_valid)
   })
@@ -55,38 +43,13 @@ pub fn main() {
 }
 
 fn is_line_valid(line: List(Int)) -> Bool {
-  list.window_by_2(line)
-  |> list.all(fn(tuple) {
-    let diff = int.absolute_value(pair.first(tuple) - pair.second(tuple))
-    diff < 4 && diff > 0
-  })
+  let diffs =
+    list.window_by_2(line)
+    |> list.map(fn(tuple) { pair.first(tuple) - pair.second(tuple) })
+
+  list.all(diffs, fn(diff) { int.absolute_value(diff) < 4 })
   && {
-    case
-      list.window_by_2(line)
-      |> list.fold(Unknown, fn(dir, tuple) {
-        let diff = pair.first(tuple) - pair.second(tuple)
-        case dir {
-          Unknown ->
-            case diff > 0 {
-              True -> Down
-              False -> Up
-            }
-          Failed -> Failed
-          Up ->
-            case diff > 0 {
-              True -> Failed
-              False -> Up
-            }
-          Down ->
-            case diff < 0 {
-              True -> Failed
-              False -> Down
-            }
-        }
-      })
-    {
-      Failed -> False
-      _ -> True
-    }
+    list.all(diffs, fn(diff) { diff < 0 })
+    || list.all(diffs, fn(diff) { diff > 0 })
   }
 }
